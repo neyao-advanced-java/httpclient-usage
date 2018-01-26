@@ -8,6 +8,7 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -17,6 +18,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
@@ -84,27 +86,80 @@ public class HttpClientTest {
   public void testPost() throws IOException {
     CloseableHttpClient httpclient = HttpClients.createDefault();
     try {
-      HttpHost target = new HttpHost("localhost", 443, "https");
-      HttpHost proxy = new HttpHost("127.0.0.1", 8080, "http");
+//      HttpHost target = new HttpHost("localhost", 443, "https");
+//      HttpHost proxy = new HttpHost("127.0.0.1", 8080, "http");
 
-      RequestConfig config = RequestConfig.custom()
-              .setProxy(proxy)
-              .build();
-      HttpGet request = new HttpGet("/");
-      request.setConfig(config);
+//      RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+      RequestConfig config = RequestConfig.custom().build();
+      HttpPost httpPost = new HttpPost("http://httpbin.org/post");
+      httpPost.setConfig(config);
 
-      System.out.println("Executing request " + request.getRequestLine() + " to " + target + " via " + proxy);
+//      System.out.println("Executing request " + request.getRequestLine() + " to " + target + " via " + proxy);
 
-      CloseableHttpResponse response = httpclient.execute(target, request);
+      CloseableHttpResponse response = httpclient.execute(httpPost);
       try {
         System.out.println("----------------------------------------");
         System.out.println(response.getStatusLine());
-        EntityUtils.consume(response.getEntity());
+        System.out.println(EntityUtils.toString(response.getEntity()));
       } finally {
         response.close();
       }
     } finally {
       httpclient.close();
+    }
+
+  }
+
+
+  @Test
+  public void testPostWithProxy() throws IOException {
+    CloseableHttpClient httpclient = HttpClients.createDefault();
+    try {
+      HttpHost proxy = new HttpHost("157.185.128.251", 61000, "http");
+
+      RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+//      RequestConfig config = RequestConfig.custom().build();
+      HttpPost httpPost = new HttpPost("http://httpbin.org/post");
+      httpPost.setConfig(config);
+
+//      System.out.println("Executing request " + request.getRequestLine() + " to " + target + " via " + proxy);
+
+      CloseableHttpResponse response = httpclient.execute(httpPost);
+      try {
+        System.out.println("----------------------------------------");
+        System.out.println(response.getStatusLine());
+        System.out.println(EntityUtils.toString(response.getEntity()));
+      } finally {
+        response.close();
+      }
+    } finally {
+      httpclient.close();
+    }
+
+  }
+
+  @Test
+  public void useSimpleHttpProxyViaSocksHttpClient() throws IOException {
+//    HttpHost host = new HttpHost("127.0.0.1", 10086, "socks");
+//    "socks"host.getSchemeName();
+
+    HttpHost proxy = new HttpHost("157.185.128.251", 61000, "http");
+
+    String url = "http://httpbin.org/ip";
+    RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+    HttpGet httpGet = new HttpGet(url);
+    httpGet.setConfig(config);
+
+    Socks5HttpClient socks5HttpClient = new Socks5HttpClient();
+//    CloseableHttpResponse  response = httpClient.execute(httpGet, null, "127.0.0.1", 1086);
+    CloseableHttpResponse response = socks5HttpClient.execute(httpGet);
+
+    try {
+      System.out.println("----------------------------------------");
+      System.out.println(response.getStatusLine());
+      System.out.println( EntityUtils.toString(response.getEntity()) );
+    } finally {
+      response.close();
     }
 
   }

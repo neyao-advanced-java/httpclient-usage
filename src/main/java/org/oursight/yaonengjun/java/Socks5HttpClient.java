@@ -69,12 +69,13 @@ public class Socks5HttpClient extends DefaultHttpClient {
       InetSocketAddress localSocksAddress = new InetSocketAddress(proxy.getHostName(), proxy.getPort());
       context.setAttribute("socks.address", localSocksAddress);
       request.getParams().removeParameter(ConnRouteParams.DEFAULT_PROXY);
+      return super.execute(request, context);
     }
     return httpclient.execute(request, context);
   }
 
 
-  public CloseableHttpResponse execute(
+  CloseableHttpResponse execute(
           final HttpUriRequest request,
           HttpContext context,
           String socksServerIp,
@@ -100,6 +101,9 @@ public class Socks5HttpClient extends DefaultHttpClient {
     @Override
     public Socket createSocket(final HttpContext context) throws IOException {
       InetSocketAddress socksaddr = (InetSocketAddress) context.getAttribute("socks.address");
+//      if(socksaddr == null)
+//        return PlainConnectionSocketFactory.INSTANCE.createSocket(context);
+
       Proxy proxy = new Proxy(Proxy.Type.SOCKS, socksaddr);
       return new Socket(proxy);
     }
