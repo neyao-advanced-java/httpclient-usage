@@ -34,7 +34,7 @@ public class Socks5HttpClient extends DefaultHttpClient {
 
 
   public Socks5HttpClient() {
-    super();
+//    super();
     Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
             .register("http", PlainConnectionSocketFactory.INSTANCE)
             .register("https", new MyConnectionSocketFactory(SSLContexts.createSystemDefault()))
@@ -69,7 +69,7 @@ public class Socks5HttpClient extends DefaultHttpClient {
       InetSocketAddress localSocksAddress = new InetSocketAddress(proxy.getHostName(), proxy.getPort());
       context.setAttribute("socks.address", localSocksAddress);
       request.getParams().removeParameter(ConnRouteParams.DEFAULT_PROXY);
-      return super.execute(request, context);
+//      return super.execute(request, context);
     }
     return httpclient.execute(request, context);
   }

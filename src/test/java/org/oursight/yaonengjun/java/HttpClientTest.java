@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.params.ConnRouteParams;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -189,6 +190,32 @@ public class HttpClientTest {
   }
 
 
+  @Test
+  public void testUseSocks5AsProxy2() throws IOException {
+    HttpHost proxy = new HttpHost("127.0.0.1", 1086, "socks");
+//    "socks"host.getSchemeName();
+
+    String url = "https://httpbin.org/ip";
+//    RequestConfig config = RequestConfig.custom().build();
+    RequestConfig config = RequestConfig.custom().build();
+    HttpGet httpGet = new HttpGet(url);
+    httpGet.getParams().setParameter(ConnRouteParams.DEFAULT_PROXY, proxy);
+    httpGet.setConfig(config);
+
+    Socks5HttpClient httpClient = new Socks5HttpClient();
+    CloseableHttpResponse  response = httpClient.execute(httpGet, (HttpContext) null);
+//    CloseableHttpResponse  response = httpClient.execute(httpGet, null, "127.0.0.1", 1086);
+
+
+    try {
+      System.out.println("----------------------------------------");
+      System.out.println(response.getStatusLine());
+      System.out.println( EntityUtils.toString(response.getEntity()) );
+    } finally {
+      response.close();
+    }
+
+  }
 
 }
 
